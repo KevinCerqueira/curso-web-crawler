@@ -68,7 +68,7 @@ class Crawler:
 
 	def extract_from_amazon(self, page: int = 1, retry: bool = False) -> None:
 		request = self.request_data(
-			f'https://www.amazon.com.br/s?rh=n%3A7791985011&fs=true&ref=lp_7791985011_sar&{page}'
+			os.getenv('AMAZON') + f'/s?rh=n%3A7791985011&fs=true&ref=lp_7791985011_sar&{page}'
 		)
 		products = request.find_all("div", {"class": "s-card-container"})
 
@@ -79,7 +79,7 @@ class Crawler:
 		else:
 			for product in products:
 				title = product.find("span", {"class": "a-size-medium a-color-base a-text-normal"}).text
-				link = "https://www.amazon.com.br" + product.find("a", {
+				link = os.getenv('AMAZON') + product.find("a", {
 					"class": "a-link-normal s-underline-text s-underline-link-text s-link-style a-text-normal"}
 					).attrs["href"]
 
