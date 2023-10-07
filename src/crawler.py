@@ -108,12 +108,12 @@ class Crawler:
 if __name__ == "__main__":
 	crawler = Crawler()
 	crawler.execute(2)
- 
+
 	def job():
 		print("\n Execute job. Time: {}".format(str(datetime.now())))
 		crawler.execute()
-  
+
 	schedule.every(1).minutes.do(job)
- 
+
 	while True:
 		schedule.run_pending()
