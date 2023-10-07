@@ -2,17 +2,25 @@
 
 Este projeto foi criado como parte do curso de Web Crawling. Ele contém scripts em Python para extrair informações de produtos de sites de e-commerce como Kabum, Amazon e Magazine Luiza.
 
-## Pré-requisitos
+## Sumário
+
+- [Pré-requisitos](#pré-requisitos)
+- [Bibliotecas Utilizadas](#bibliotecas-utilizadas)
+- [Instalação](#instalação)
+- [Estrutura do Projeto](#estrutura-do-projeto)
+- [Uso](#uso)
+
+### Pré-requisitos
 
 - Python 3.10+
 - pip
 
-## Bibliotecas Utilizadas
+### Bibliotecas Utilizadas
 
 - Requests
 - BeautifulSoup
 
-## Instalação
+### Instalação
 
 Para instalar as dependências, execute:
 
@@ -20,7 +28,7 @@ Para instalar as dependências, execute:
 pip install -r requirements.txt
 ```
 
-## Uso
+### Uso
 
 Para usar o Web Crawler, siga as etapas abaixo:
 
