@@ -2,12 +2,20 @@ import requests
 from bs4 import BeautifulSoup
 import json
 import time
-
+import schedule
+from datetime import datetime
+from database import Database
+from dotenv import load_dotenv
+import os
 # 1 https://www.kabum.com.br/gamer?page_number=1&page_size=20&facet_filters=&sort=most_searched
 # 2 https://www.amazon.com.br/s?rh=n%3A7791985011&fs=true&ref=lp_7791985011_sar
 # 3 https://www.magazineluiza.com.br/games/l/ga/
 
 class Crawler:
+
+	def __init__(self):
+		load_dotenv()
+		self.db = Database()
 
 	def request_data(self, url: str, retry: bool = False) -> BeautifulSoup:
 		try:
@@ -27,7 +35,7 @@ class Crawler:
 
 	def extract_from_kabum(self, page: int = 1, retry: bool = False) -> None:
 		request = self.request_data(
-			f'https://www.kabum.com.br/gamer?facet_filters=&sort=most_searched&page_size=20&page_number={page}'
+			os.getenv('KABUM') + f'/gamer?facet_filters=&sort=most_searched&page_size=20&page_number={page}'
 		)
 
 		products = request.find_all('div', {'class': 'productCard'})
@@ -38,25 +46,25 @@ class Crawler:
 		else:
 			for product in products:
 				title = product.find('span', {'class': 'nameCard'}).text
-				image = product.find('img', {'class': 'imageCard'}).attrs['src']
 
-				link = 'https://www.kabum.com.br' + str(product.find('a', {'class': 'productLink'}).attrs['href'])
+				link = os.getenv('KABUM') + str(product.find('a', {'class': 'productLink'}).attrs['href'])
 				second_request = self.request_data(link)
 
 				price = second_request.find("h4", {"class": "finalPrice"}).text
 				price = self.format_price(price)
 
-				big_image = second_request.find_all("script")[1].text.replace('\\\\"', '')
-				big_image = json.loads(big_image)["image"]
+				image = second_request.find_all("script")[1].text.replace('\\\\"', '')
+				image = json.loads(image)["image"]
 
 				data = {
 					'title': title,
-					'image': big_image or image,
+					'image': image,
 					'price': price,
-					'link': link
+					'link': link,
+					'date': datetime.now()
 				}
 
-				print("KABUM", data)
+				self.db.insert(data)
 
 	def extract_from_amazon(self, page: int = 1, retry: bool = False) -> None:
 		request = self.request_data(
@@ -85,10 +93,11 @@ class Crawler:
 					'title': title,
 					'image': image,
 					'price': price,
-					'link': link
+					'link': link,
+					'date': datetime.now()
 				}
 
-				print("AMAZON", data)
+				self.db.insert(data)
 
 	def execute(self, num_pages: int = 3):
 		for page in range(1, num_pages):
@@ -99,3 +108,12 @@ class Crawler:
 if __name__ == "__main__":
 	crawler = Crawler()
 	crawler.execute(2)
+ 
+	def job():
+		print("\n Execute job. Time: {}".format(str(datetime.now())))
+		crawler.execute()
+  
+	schedule.every(1).minutes.do(job)
+ 
+	while True:
+		schedule.run_pending()
