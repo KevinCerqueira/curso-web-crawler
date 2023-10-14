@@ -7,6 +7,7 @@ from datetime import datetime
 from database import Database
 from dotenv import load_dotenv
 import os
+from bot import BOT
 # 1 https://www.kabum.com.br/gamer?page_number=1&page_size=20&facet_filters=&sort=most_searched
 # 2 https://www.amazon.com.br/s?rh=n%3A7791985011&fs=true&ref=lp_7791985011_sar
 # 3 https://www.magazineluiza.com.br/games/l/ga/
@@ -16,6 +17,7 @@ class Crawler:
 	def __init__(self):
 		load_dotenv()
 		self.db = Database()
+		self.bot = BOT()
 
 	def request_data(self, url: str, retry: bool = False) -> BeautifulSoup:
 		try:
@@ -64,7 +66,11 @@ class Crawler:
 					'date': datetime.now()
 				}
 
-				self.db.insert(data)
+				response = self.db.insert(data)
+				if response is not None:
+					if "old_price" in response:
+						response["old_price"] = 0
+					self.bot.post(response)
 
 	def extract_from_amazon(self, page: int = 1, retry: bool = False) -> None:
 		request = self.request_data(
@@ -97,13 +103,17 @@ class Crawler:
 					'date': datetime.now()
 				}
 
-				self.db.insert(data)
+				response = self.db.insert(data)
+				if response is not None:
+					if "old_price" in response:
+						response["old_price"] = 0
+					self.bot.post(response)
 
-	def execute(self, num_pages: int = 3):
+	def execute(self, num_pages: int = 1):
 		for page in range(1, num_pages):
 			self.extract_from_kabum(page)
 			self.extract_from_amazon(page)
-
+			exit()
 
 if __name__ == "__main__":
 	crawler = Crawler()

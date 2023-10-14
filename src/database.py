@@ -13,12 +13,20 @@ class Database:
 		db = client['curso']
 		return db.offers
 	
-	def insert(self, data: dict):
+	def insert(self, data: dict) -> dict | None:
 		query = {'title': data['title']}
 		result = self.offers.find_one(query, sort=[('date', -1)])
 
-		if (result is None) or (result['price'] > data['price'] or result['price'] < data['price']):
-			return self.offers.insert_one(data)
+		if result is None:
+			self.offers.insert_one(data)
+			return data
+		elif result['price'] > data['price'] or result['price'] < data['price']:
+			product = data.copy()
+			product["old_price"] = result["price"]
+			self.offers.insert_one(data)
+			return product
+		else:
+			return None
 			
 
 if __name__ == "__main__":
